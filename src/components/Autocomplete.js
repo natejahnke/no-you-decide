@@ -1,5 +1,8 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import axios from 'axios';
+import { Query } from "react-apollo";
+import Store from "./Store";
 
 export class Autocomplete extends Component {
   static propTypes = {
@@ -67,6 +70,28 @@ export class Autocomplete extends Component {
     }
   };
 
+  // componentDidMount() {
+  //   axios({
+  //     url: 'https://api.yelp.com/v3/graphql',
+  //     method: 'post',
+  //     data: {
+  //       query: `
+  //         query PostsForAuthor {
+  //           author(id: 1) {
+  //             firstName
+  //               posts {
+  //                 title
+  //                 votes
+  //               }
+  //             }
+  //           }
+  //         `
+  //     }
+  //   }).then((result) => {
+  //     console.log(result.data)
+  //   });
+  // }
+
   render() {
     const {
       onChange,
@@ -109,17 +134,32 @@ export class Autocomplete extends Component {
     }
 
     return (
-      <React.Fragment>
-        <input
-          type="search"
-          onChange={onChange}
-          onKeyDown={onKeyDown}
-          value={userInput}
-        />
-        {suggestionsListComponent}
-      </React.Fragment>
-    );
-  }
-}
+      
+        // <input
+        //   type="search"
+        //   onChange={onChange}
+        //   onKeyDown={onKeyDown}
+        //   value={userInput}
+        // />
+        // {suggestionsListComponent}
+        <Query
+          query={gql`
+            {
+              business(id: "garaje-san-francisco") {
+                name
+                id
+                alias
+                rating
+                url
+              }
+            }
+            `}
+            >
+              {({ loading, error, data }) => {
+                if (loading) return <p>Good things take time...</p>
+                if (error) return <p>Something went wrong....</p>
 
-export default Autocomplete;
+                return <div>{data.business.map(store => <Store store={store} />)}</div>
+              }}
+          </Query>
+    )
